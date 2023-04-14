@@ -1,0 +1,10 @@
+Package: cohortRand
+Title: cohortRand, a randomization package for cohort randomization
+Version: 0.0.0.9000
+Authors@R: 
+    person("Kai", "Xia", , "kxia@med.unc.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: For Randomized Controlled Trial of intervention studies, the participants are usually randomized as group or cohort to a few number of intervention arms. In this case, instead of randomizing subject by subject, the RCT randomization is done by group or cohort. Minimization method tends to minimize the differences among groups while controlling for a number of prognostic factors. cohortRand is designed to provide user friendly R implementation to perform cohort randomization using existing miniRand package. It also provides summary statistics to track how each cohort has been randomized.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
