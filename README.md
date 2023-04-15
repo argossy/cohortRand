@@ -32,11 +32,7 @@ library(devtools)
 library(gtsummary)
 library(knitr)
 library(Minirand) # minization method
-
-
-dir_pack = '..' # if on PC and linux if folder is correctly placed
-load_all(sprintf('%s/cohortRand',dir_pack))
-
+library(cohortRand)
 
 
 ### run example
