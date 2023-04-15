@@ -18,16 +18,12 @@ if(!requireNamespace("devtools", quietly = TRUE))
 devtools::install_github("argossy/cohortRand@main")
 ```
 
-The package includes reference manual, sample data and a Vignette.
-
-## Basic Usage
-
 
 ## Basic Usage
 ### Randomizing cohort 1
 
 ```r
-## simulation code for random assignments
+s## simulation code for random assignments
 
 ## add cohort by cohort in each chunk, then save the output by the date
 ## Cohort 1
@@ -45,161 +41,141 @@ load_all(sprintf('%s/cohortRand',dir_pack))
 
 ### run example
 
+#fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
+
+# define parameters for the randomization
 
 
-################################################################################
-# randomizing cohort 1
-################################################################################
-
-## cohort number
-co_id = 1
-method='Range'
-
-fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
-set.seed(2023 + co_id)
-ntrt <- 3 # number of treatment types
+co_id = 1              ## cohort number
+set.seed(2023 + co_id) ## random see for this cohort
+method='Range'         ## minization method
+ntrt <- 3              ## number of treatment types
+ratio <- rep(1,ntrt)   ## assignment ratio
 #trtseq <- 1:ntrt # treatment assignment number
-rand.mat <- NULL # randomization matrix
+
+rand.mat <- NULL
+
 
 
 ## simulating the information of this cohort
-  nsample <- round(runif(1,18,22)) # sample size of this cohort
-  ratio <- rep(1,ntrt) # assignment ratio
+nsample <- round(runif(1,18,25)) # sample size of this cohort
   
-  # simulating two covariates
-  c1 <- sample(c('M', 'F'), nsample, replace = TRUE, prob = c(0.4, 0.6))
-  c2 <- sample(c('H','L'), nsample, replace = TRUE, prob = c(0.3, 0.7))
-  covmat <- cbind(c1, c2) # generate the matrix of covariate factors for the subjects
-  # label of the covariates. start with 'CV' so that it can be identified as covariate (strata)
-  colnames(covmat) = c("CV.Gender", "CV.Risk")
-  
-  # add ID for simulated data
-  id_start = 1
-  id_end = id_start + nsample - 1
-  ID = paste('ID_', id_start:id_end, sep='')
-  covmat <- data.frame(ID, covmat)
-  
-  sum_cov(covmat )
-  ## create input matrix with ID, covariates and empty randomization
-  rand.mat <- create_rand_mat(rand.mat, covmat)
+## create random subject with covariates
+covmat <- random_cov(nsample)
 
-  ## start cohort 1 randomization using minization method
-  rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
-  write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+## check strata of this random cohort  
+sum_cov(covmat)
+  
+## create input matrix with ID, covariates and empty randomization
+rand.mat <- create_rand_mat(rand.mat, covmat)
+
+## start cohort 1 randomization using minization method
+rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
+#write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
   
 
-### output the randomization assigment table
-sum_random(rand.mat)
+### the randomization assignment
+#cat(sprintf("#### Summary of all randomized subjects"))
+sum_random(rand.mat,full.tab = TRUE,sum.tab = FALSE)
+
+cat(sprintf("#### Summary of all randomized subjects"))
+sum_random(rand.mat,full.tab = FALSE,sum.tab = TRUE)
 
 ```
 
-
 ### Randomizing cohort 2
 ```r
-## simulation code for random assignments
-
-## add cohort by cohort in each chunk, then save the output by the date
-## Cohort 2
-
-## cohort ID
-co_id = 2
-
-fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
-
-### run example
+# define parameters for the randomization
 
 
-set.seed(2023 + co_id)
-#ntrt <- 2
-#trtseq <- 1:ntrt
-#rand.mat <- read.csv(filein,header = TRUE)
+co_id = 2              ## cohort number
+set.seed(2023 + co_id) ## random seed for this cohort
+method='Range'         ## minization method
+ntrt <- 3              ## number of treatment types
+ratio <- rep(1,ntrt)   ## assignment ratio
+#trtseq <- 1:ntrt # treatment assignment number
 
-   nsample <- round(runif(1,18,22))
+
+
+## simulating the information of this cohort
+nsample <- round(runif(1,18,25)) # sample size of this cohort
   
-  ratio <- rep(1,ntrt)
-  c1 <- sample(c('M', 'F'), nsample, replace = TRUE, prob = c(0.4, 0.6))
-  c2 <- sample(c('H','L'), nsample, replace = TRUE, prob = c(0.3, 0.7))
-  covmat <- cbind(c1, c2) # generate the matrix of covariate factors for the subjects
-  # label of the covariates
-  colnames(covmat) = c("CV.Gender", "CV.Risk")
+## create random subject with covariates
+covmat <- random_cov(nsample, rand.mat$ID)
+
+## check strata of this random cohort  
+sum_cov(covmat)
   
-  ## create input matrix with both covartes and randomization
-  id_start = dim(rand.mat)[1] + 1
-  id_end = id_start + nsample - 1
-  ID = paste('ID_', id_start:id_end, sep='')
-  covmat <- data.frame(ID, covmat)
-  sum_cov(covmat )
+## create input matrix with ID, covariates and empty randomization
+rand.mat <- create_rand_mat(rand.mat, covmat)
+
+
+## start cohort 1 randomization using minization method
+rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
+#write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
   
-  rand.mat <- create_rand_mat(rand.mat, covmat)
-  
-  ## start cohort 1 randomization using minization method
-  rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
-  write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
-  
-  ### output summary of randomization table
-  sum_random(rand.mat)
+rand.mat.co <- rand.mat[rand.mat$cohort == co_id,]
+### the randomization assignment of cohort 2
+sum_random(rand.mat.co,full.tab=TRUE)
+
+cat(sprintf("#### Summary of all randomized subjects"))
+sum_random(rand.mat,full.tab = FALSE,sum.tab = TRUE)
+
+
+
+
+
 
 
 ```
 
 ### Randomizing cohort 3
+
+
+
 ```r
-## simulation code for random assignments
 
-## add cohort by cohort in each chunk, then save the output by the date
-## Cohort 3
-
-library(devtools)
-library(gtsummary)
-library(knitr)
-library(Minirand)
-
-## cohort ID
-co_id = 3
-
-# dir_pack = '..' # if on PC and linux if folder is correctly placed
-# load_all(sprintf('%s/cohortRand',dir_pack))
-
-filein =  sprintf('random_sequence_cohort_%s.csv', co_id-1)
-fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
-
-### run example
+co_id = 3              ## cohort number
+set.seed(2023 + co_id) ## random seed for this cohort
+method='Range'         ## minization method
+ntrt <- 3              ## number of treatment types
+ratio <- rep(1,ntrt)   ## assignment ratio
+#trtseq <- 1:ntrt # treatment assignment number
 
 
-set.seed(2023 + co_id)
-# ntrt <- 2
-# trtseq <- 1:ntrt
-#rand.mat <- read.csv(filein,header = TRUE)
 
-  nsample <- round(runif(1,18,22))
+## simulating the information of this cohort
+nsample <- round(runif(1,18,25)) # sample size of this cohort
   
-  ratio <- rep(1,ntrt)
-  c1 <- sample(c('M', 'F'), nsample, replace = TRUE, prob = c(0.4, 0.6))
-  c2 <- sample(c('H','L'), nsample, replace = TRUE, prob = c(0.3, 0.7))
-  covmat <- cbind(c1, c2) # generate the matrix of covariate factors for the subjects
-  # label of the covariates
-  colnames(covmat) = c("CV.Gender", "CV.Risk")
-  
-  ## create input matrix with both covartes and randomization
-  id_start = dim(rand.mat)[1] + 1
-  id_end = id_start + nsample - 1
-  ID = paste('ID_', id_start:id_end, sep='')
-  covmat <- data.frame(ID, covmat)
-  
-  sum_cov(covmat )
-  
-  rand.mat <- create_rand_mat(rand.mat, covmat)
-  
-  ## start cohort 1 randomization using minization method
-  rand.mat <- cohortRand(rand.mat, ntrt = ntrt,ratio=ratio,method=method)
-  write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+## create random subject with covariates
+covmat <- random_cov(nsample, rand.mat$ID)
 
-  ### output summary of randomization table
-  sum_random(rand.mat)
+## check strata of this random cohort  
+sum_cov(covmat)
+  
+## create input matrix with ID, covariates and empty randomization
+rand.mat <- create_rand_mat(rand.mat, covmat)
 
+
+## start cohort 1 randomization using minization method
+rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
+#write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+  
+rand.mat.co <- rand.mat[rand.mat$cohort == co_id,]
+### the randomization assignment of cohort 2
+sum_random(rand.mat.co,full.tab=TRUE)
+
+cat(sprintf("#### Summary of all randomized subjects"))
+sum_random(rand.mat,full.tab = FALSE,sum.tab = TRUE)
 
 
 ```
+
+
+
+
+
+
 
 ## Contact
 Kai Xia: kxia@med.unc.edu
