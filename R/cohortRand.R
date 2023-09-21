@@ -11,7 +11,7 @@
 ### procedure
 ## 1) when no subject has been assigned, randomly assign the first subject
 ## 2) the future subject will be sequentially added to the assignment by minirand
-## 3) create a randomization ID as 'Random_XXX'
+## 3) create a numeric randomization ID in addition to the given ID
 ## 4) output current imbalance and summary table of randomization by cohort
 
 
@@ -142,7 +142,7 @@ create_rand_mat <- function(rand.mat, covmat){
 
 
 ##
-sum_random <- function(rand.mat){
+sum_random <- function(rand.mat, full.tab = FALSE, sum.tab = TRUE){
   rand.mat.out <- rand.mat
 
   rand.mat.out$cohort = as.factor(rand.mat.out$cohort)
@@ -152,11 +152,18 @@ sum_random <- function(rand.mat){
   rand.mat.out$random <- trtNames[rand.mat.out$random ]
 
   # output file
-  write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+  #write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
 
   ### output into PDF
-  print(kable(rand.mat.out,caption=sprintf('Cohort %s randomization asignment',co_id)))
-  #cat('\\pagebreak')
+  if(full.tab == TRUE){
+    cat(sprintf("#### Cohort %s: Subject randomization",co_id))
+    print(kable(rand.mat.out,caption=sprintf('Cohort %s randomization asignment',co_id)))
+    #cat('\\pagebreak')
+  }
+
+  if(sum.tab == FALSE){
+    return()
+  }
 
   tb1 <- rand.mat.out %>%
     select(-c(ID,random.id)) %>%
@@ -167,6 +174,28 @@ sum_random <- function(rand.mat){
     bold_labels()
 
   tb1 %>% as_gt()
+}
+
+### create random covariate data
+### adding ID based on existing ID. ID format: ID_XXX
+random_cov <- function(nsample,ids = NULL) {
+
+  if(is.null(ids)){
+    ID <- paste('ID_',1:nsample, sep='')
+  } else{
+    ids_rand <- as.numeric(gsub('ID_','', ids))
+    id_max <- max(ids_rand)
+    id_start = id_max + 1
+    id_end = id_start + nsample - 1
+    ID = paste('ID_', id_start:id_end, sep='')
+  }
+
+  c1 <- sample(c('M', 'F'), nsample, replace = TRUE, prob = c(0.4, 0.6))
+  c2 <- sample(c('H','L'), nsample, replace = TRUE, prob = c(0.3, 0.7))
+  covmat <- data.frame(ID, c1, c2) # generate the matrix of covariate factors for the subjects
+  # label of the covariates
+  colnames(covmat) = c("ID","CV.Gender", "CV.Risk")
+  return(covmat)
 }
 
 
