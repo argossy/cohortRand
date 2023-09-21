@@ -1,0 +1,192 @@
+---
+title: "randomization SMILE"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Randomizing cohort 1
+```{r echo=FALSE,results='asis',include=TRUE, cache=FALSE,message=FALSE, warning=FALSE, eval=TRUE}
+## simulation code for random assignments
+
+## add cohort by cohort in each chunk, then save the output by the date
+## Cohort 1
+
+library(devtools)
+library(gtsummary)
+library(knitr)
+library(cohortRand)
+
+
+
+dir_pack = '../..' # if on PC and linux if folder is correctly placed
+#load_all(sprintf('%s/cohortRand',dir_pack))
+
+
+
+### run example
+library(Minirand)
+
+
+################################################################################
+# randomizing cohort 1
+################################################################################
+
+## cohort number
+co_id = 1              ## cohort number
+set.seed(2023 + co_id) ## random see for this cohort
+method='Range'         ## minization method
+ntrt <- 3              ## number of treatment types
+ratio <- rep(1,ntrt)   ## assignment ratio
+#trtseq <- 1:ntrt # treatment assignment number
+
+## load input cohort 1 data
+filein = sprintf('input_random_sequence_cohort_%s.csv', co_id)
+fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
+
+
+rand.mat <- read.csv(filein)
+#sum_cov(covmat)
+
+
+## start cohort 1 randomization using minization method
+rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
+write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+  
+  
+
+
+
+### output final table
+rand.mat.out <- rand.mat
+
+## remove ID column
+idx_rm = which(colnames(rand.mat.out) %in% c('ID','random.id'))
+#rand.mat.out = rand.mat.out[,-idx_rm]
+rand.mat.out$cohort = as.factor(rand.mat.out$cohort)
+colnames(rand.mat.out) <- gsub('CV.','', colnames(rand.mat.out))
+#trtNames <- paste('Treatment',LETTERS[1:ntrt])
+trtNames <- LETTERS[1:ntrt]
+rand.mat.out$random <- trtNames[rand.mat.out$random ]
+
+# output file
+write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+
+### output into PDF
+print(kable(rand.mat.out,caption=sprintf('Cohort %s',co_id)))
+cat('\\pagebreak')
+  
+tb1 <- rand.mat.out %>%
+  select(-c(ID,random.id)) %>%
+  tbl_summary(by=random) %>%
+  modify_header(label ~ "**Strata**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Treatment Received**") %>%
+  modify_caption("**Table 1. Randomization assignment**") %>%
+  bold_labels()
+  
+  tb1 %>% as_gt()
+
+cat('\\pagebreak')
+
+
+
+```
+
+
+# Randomizing cohort 2
+
+```{r echo=FALSE,results='asis',include=TRUE, cache=FALSE,message=FALSE, warning=FALSE, eval=TRUE}
+## simulation code for random assignments
+
+## add cohort by cohort in each chunk, then save the output by the date
+## Cohort 1
+
+library(devtools)
+library(gtsummary)
+library(knitr)
+library(cohortRand)
+library(Minirand)
+
+
+#dir_pack = '../..' # if on PC and linux if folder is correctly placed
+#load_all(sprintf('%s/cohortRand',dir_pack))
+
+
+
+### run example
+
+
+
+################################################################################
+# randomizing cohort 2
+################################################################################
+
+## cohort number
+co_id = 2              ## cohort number
+set.seed(2023 + co_id) ## random see for this cohort
+method='Range'         ## minization method
+ntrt <- 3              ## number of treatment types
+ratio <- rep(1,ntrt)   ## assignment ratio
+#trtseq <- 1:ntrt # treatment assignment number
+
+## load input cohort 1 data
+## user prepare this input file with subject ID and strata
+## this file also include previously generated randomization sequence
+filein = sprintf('input_random_sequence_cohort_%s.csv', co_id)
+
+## package output file with randomization info
+fileout = sprintf('random_sequence_cohort_%s.csv', co_id)
+
+
+rand.mat <- read.csv(filein)
+#sum_cov(covmat)
+
+
+## start cohort 1 randomization using minization method
+rand.mat <- cohortRand(rand.mat, ntrt = ntrt, ratio = ratio,method=method)
+write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+  
+  
+
+
+
+### output final table
+rand.mat.out <- rand.mat
+
+## remove ID column
+idx_rm = which(colnames(rand.mat.out) %in% c('ID','random.id'))
+#rand.mat.out = rand.mat.out[,-idx_rm]
+rand.mat.out$cohort = as.factor(rand.mat.out$cohort)
+colnames(rand.mat.out) <- gsub('CV.','', colnames(rand.mat.out))
+#trtNames <- paste('Treatment',LETTERS[1:ntrt])
+trtNames <- LETTERS[1:ntrt]
+rand.mat.out$random <- trtNames[rand.mat.out$random ]
+
+# output file
+write.csv(rand.mat, file = fileout,row.names = FALSE,quote=FALSE)
+
+### output into PDF
+print(kable(rand.mat.out,caption=sprintf('Cohort %s',co_id)))
+cat('\\pagebreak')
+  
+tb1 <- rand.mat.out %>%
+  select(-c(ID,random.id)) %>%
+  tbl_summary(by=random) %>%
+  modify_header(label ~ "**Strata**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Treatment Received**") %>%
+  modify_caption("**Table 1. Randomization assignment**") %>%
+  bold_labels()
+  
+  tb1 %>% as_gt()
+
+cat('\\pagebreak')
+
+
+
+```
+
